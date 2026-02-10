@@ -33,6 +33,8 @@ backend:
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
   reading:
     allow:
+      - host: github.com
+      - host: api.github.com
       - host: raw.githubusercontent.com
 
 integrations:
@@ -103,8 +105,8 @@ catalog:
 
     # External repo example (GitHub)
     - type: url
-      # Use raw content to avoid HTML responses from GitHub's UI pages.
-      target: https://raw.githubusercontent.com/hosseinsalahi/platform-engineer-battleground/main/catalog-info.yaml
+      # Use a GitHub URL so the GitHub integration UrlReader is used (TechDocs needs readTree support).
+      target: https://github.com/hosseinsalahi/platform-engineer-battleground/blob/main/catalog-info.yaml
 
     ## Uncomment these lines to add more example data
     # - type: url
