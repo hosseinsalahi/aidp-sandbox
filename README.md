@@ -8,3 +8,7 @@ To start the app, run:
 yarn install
 yarn start
 ```
+
+## AIDP roadmap
+
+See `docs/AIDP_ROADMAP.md`.
