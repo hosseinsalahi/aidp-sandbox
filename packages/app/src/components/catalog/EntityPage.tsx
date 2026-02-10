@@ -57,6 +57,7 @@ import {
   EntityKubernetesContent,
   isKubernetesAvailable,
 } from '@backstage/plugin-kubernetes';
+import { EntityAiContent } from '../ai/EntityAiContent';
 
 const techdocsContent = (
   <EntityTechdocsContent>
@@ -186,6 +187,10 @@ const serviceEntityPage = (
     <EntityLayout.Route path="/docs" title="Docs">
       {techdocsContent}
     </EntityLayout.Route>
+
+    <EntityLayout.Route path="/ai" title="AI">
+      <EntityAiContent />
+    </EntityLayout.Route>
   </EntityLayout>
 );
 
@@ -221,6 +226,10 @@ const websiteEntityPage = (
     <EntityLayout.Route path="/docs" title="Docs">
       {techdocsContent}
     </EntityLayout.Route>
+
+    <EntityLayout.Route path="/ai" title="AI">
+      <EntityAiContent />
+    </EntityLayout.Route>
   </EntityLayout>
 );
 
@@ -239,6 +248,10 @@ const defaultEntityPage = (
 
     <EntityLayout.Route path="/docs" title="Docs">
       {techdocsContent}
+    </EntityLayout.Route>
+
+    <EntityLayout.Route path="/ai" title="AI">
+      <EntityAiContent />
     </EntityLayout.Route>
   </EntityLayout>
 );

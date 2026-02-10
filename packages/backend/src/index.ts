@@ -12,6 +12,7 @@ const backend = createBackend();
 
 backend.add(import('@backstage/plugin-app-backend'));
 backend.add(import('@backstage/plugin-proxy-backend'));
+backend.add(import('./plugins/ai'));
 
 // scaffolder plugin
 backend.add(import('@backstage/plugin-scaffolder-backend'));
