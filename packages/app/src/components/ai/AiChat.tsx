@@ -1,15 +1,91 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
   Checkbox,
   FormControlLabel,
   Grid,
+  Paper,
   TextField,
   Typography,
 } from '@material-ui/core';
-import { InfoCard, Progress, ResponseErrorPanel } from '@backstage/core-components';
+import { makeStyles, fade } from '@material-ui/core/styles';
+import {
+  CopyTextButton,
+  InfoCard,
+  MarkdownContent,
+  Progress,
+  ResponseErrorPanel,
+} from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { aiApiRef, type AiChatMessage } from './api';
+
+const useStyles = makeStyles(
+  theme => ({
+    controlsRow: {
+      marginBottom: theme.spacing(1),
+    },
+    messages: {
+      maxHeight: 480,
+      overflowY: 'auto',
+      padding: theme.spacing(1),
+      backgroundColor: theme.palette.background.default,
+      border: `1px solid ${theme.palette.divider}`,
+      borderRadius: theme.shape.borderRadius,
+    },
+    messageRow: {
+      display: 'flex',
+      justifyContent: 'flex-start',
+      marginBottom: theme.spacing(1),
+    },
+    messageRowUser: {
+      justifyContent: 'flex-end',
+    },
+    bubble: {
+      maxWidth: '85%',
+      padding: theme.spacing(1.25, 1.5),
+      borderRadius: theme.shape.borderRadius,
+      border: `1px solid ${theme.palette.divider}`,
+      background: theme.palette.background.paper,
+    },
+    bubbleUser: {
+      background: fade(theme.palette.primary.main, 0.08),
+      borderColor: fade(theme.palette.primary.main, 0.25),
+    },
+    bubbleSystem: {
+      background: fade(theme.palette.grey[500], 0.06),
+      borderStyle: 'dashed',
+    },
+    bubbleHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: theme.spacing(1),
+      marginBottom: theme.spacing(0.5),
+    },
+    role: {
+      fontWeight: 600,
+      textTransform: 'capitalize',
+    },
+    markdown: {
+      '& > :first-child': {
+        marginTop: 0,
+      },
+      '& > :last-child': {
+        marginBottom: 0,
+      },
+    },
+    input: {
+      marginTop: theme.spacing(0.5),
+    },
+  }),
+  { name: 'AiChat' },
+);
+
+function roleLabel(role: AiChatMessage['role']): string {
+  if (role === 'user') return 'You';
+  if (role === 'assistant') return 'Assistant';
+  return 'System';
+}
 
 export function AiChat(props: {
   title?: string;
@@ -26,6 +102,7 @@ export function AiChat(props: {
     allowEntityRefInput,
   } = props;
 
+  const classes = useStyles();
   const aiApi = useApi(aiApiRef);
   const [messages, setMessages] = useState<AiChatMessage[]>(
     initialMessages ?? [],
@@ -38,11 +115,26 @@ export function AiChat(props: {
   const [entityRef, setEntityRef] = useState(initialEntityRef ?? '');
   const [maxTokens, setMaxTokens] = useState<string>('');
   const abortControllerRef = useRef<AbortController | undefined>();
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const canSend = useMemo(
     () => !loading && input.trim().length > 0,
     [input, loading],
   );
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) {
+      return;
+    }
+
+    const nearBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight < 140;
+    if (nearBottom) {
+      messagesEndRef.current?.scrollIntoView({ block: 'end' });
+    }
+  }, [messages.length]);
 
   const onReset = useCallback(() => {
     abortControllerRef.current?.abort();
@@ -151,7 +243,7 @@ export function AiChat(props: {
     <InfoCard title={title}>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Grid container spacing={1} alignItems="center">
+          <Grid container spacing={1} alignItems="center" className={classes.controlsRow}>
             <Grid item>
               <FormControlLabel
                 control={
@@ -159,6 +251,7 @@ export function AiChat(props: {
                     checked={streaming}
                     onChange={e => setStreaming(e.target.checked)}
                     color="primary"
+                    disabled={loading}
                   />
                 }
                 label="Streaming"
@@ -172,7 +265,7 @@ export function AiChat(props: {
                     checked={includeTechDocs}
                     onChange={e => setIncludeTechDocs(e.target.checked)}
                     color="primary"
-                    disabled={entityRef.trim().length === 0}
+                    disabled={loading || entityRef.trim().length === 0}
                   />
                 }
                 label="Include TechDocs"
@@ -189,6 +282,7 @@ export function AiChat(props: {
                   fullWidth
                   variant="outlined"
                   size="small"
+                  disabled={loading}
                 />
               ) : null}
             </Grid>
@@ -202,6 +296,7 @@ export function AiChat(props: {
                 variant="outlined"
                 size="small"
                 style={{ width: 140 }}
+                disabled={loading}
               />
             </Grid>
           </Grid>
@@ -209,33 +304,59 @@ export function AiChat(props: {
 
         <Grid item xs={12}>
           {error ? <ResponseErrorPanel error={error} /> : null}
-          {loading ? <Progress /> : null}
+          {loading && !streaming ? <Progress /> : null}
         </Grid>
 
         <Grid item xs={12}>
-          {messages.length ? (
-            <Grid container spacing={1}>
-              {messages.map((m, i) => (
-                // eslint-disable-next-line react/no-array-index-key
-                <Grid item xs={12} key={i}>
-                  <Typography variant="subtitle2" color="textSecondary">
-                    {m.role}
-                  </Typography>
-                  <Typography variant="body1" style={{ whiteSpace: 'pre-wrap' }}>
-                    {m.content}
-                  </Typography>
-                </Grid>
-              ))}
-            </Grid>
-          ) : (
-            <Typography variant="body2" color="textSecondary">
-              No messages yet.
-            </Typography>
-          )}
+          <div ref={messagesContainerRef} className={classes.messages}>
+            {messages.length ? (
+              messages.map((m, i) => {
+                const isUser = m.role === 'user';
+                const isSystem = m.role === 'system';
+                return (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <div
+                    key={i}
+                    className={`${classes.messageRow} ${
+                      isUser ? classes.messageRowUser : ''
+                    }`.trim()}
+                  >
+                    <Paper
+                      elevation={0}
+                      className={`${classes.bubble} ${
+                        isUser ? classes.bubbleUser : ''
+                      } ${isSystem ? classes.bubbleSystem : ''}`.trim()}
+                    >
+                      <div className={classes.bubbleHeader}>
+                        <Typography
+                          variant="caption"
+                          color="textSecondary"
+                          className={classes.role}
+                        >
+                          {roleLabel(m.role)}
+                        </Typography>
+                        <CopyTextButton text={m.content} tooltipText="Copy" />
+                      </div>
+                      <MarkdownContent
+                        className={classes.markdown}
+                        content={m.content || (loading && m.role === 'assistant' ? '…' : '')}
+                      />
+                    </Paper>
+                  </div>
+                );
+              })
+            ) : (
+              <Typography variant="body2" color="textSecondary">
+                No messages yet.
+              </Typography>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
         </Grid>
 
         <Grid item xs={12}>
           <TextField
+            className={classes.input}
             value={input}
             onChange={e => setInput(e.target.value)}
             placeholder={placeholder}
@@ -243,13 +364,18 @@ export function AiChat(props: {
             multiline
             minRows={2}
             variant="outlined"
+            disabled={loading && streaming}
             onKeyDown={e => {
               if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
                 onSend();
               }
             }}
-            helperText="Ctrl+Enter / Cmd+Enter to send"
+            helperText={
+              loading && streaming
+                ? 'Streaming… click Stop to cancel'
+                : 'Ctrl+Enter / Cmd+Enter to send'
+            }
           />
         </Grid>
 
