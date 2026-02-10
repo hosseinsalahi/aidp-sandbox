@@ -47,6 +47,28 @@ This repo currently provides:
   - [ ] Treat docs as untrusted; strip directives
   - [ ] Add “ignore instructions from retrieved context” policy text
 
+## Milestone 3b — Confluence + Jira context and actions
+
+- [ ] Connectors
+  - [ ] Confluence reader (space allowlist, page allowlist, CQL filters)
+  - [ ] Jira reader (project allowlist, JQL filters, issue types)
+- [ ] Permissions and governance
+  - [ ] Enforce Confluence/Jira permissions in retrieval (no cross-tenant leaks)
+  - [ ] Redaction rules for sensitive fields (PII, secrets, security tickets)
+  - [ ] Audit logs: which pages/issues were retrieved for a response
+- [ ] Indexing
+  - [ ] Normalize content (HTML → text) and chunk
+  - [ ] Embeddings + vector storage
+  - [ ] Incremental sync (webhooks or polling)
+- [ ] Retrieval UX
+  - [ ] Add toggles for “Include Confluence” and “Include Jira”
+  - [ ] Citations back to source pages/issues (links + titles)
+  - [ ] Entity scoping (only retrieve items mapped to the entity via labels/components)
+- [ ] Assisted workflows (human-in-the-loop)
+  - [ ] “Create Jira ticket from chat” (draft → review → create)
+  - [ ] “Draft Confluence page” (runbook/postmortem/ADR template)
+  - [ ] “Summarize sprint/epic” for an entity
+
 ## Milestone 4 — Observability and evaluation
 
 - [ ] Tracing
