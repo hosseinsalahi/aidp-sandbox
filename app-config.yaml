@@ -96,7 +96,8 @@ catalog:
 
     # External repo example (GitHub)
     - type: url
-      target: https://github.com/hosseinsalahi/platform-engineer-battleground/blob/main/catalog-info.yaml
+      # Use raw content to avoid HTML responses from GitHub's UI pages.
+      target: https://raw.githubusercontent.com/hosseinsalahi/platform-engineer-battleground/main/catalog-info.yaml
 
     ## Uncomment these lines to add more example data
     # - type: url
