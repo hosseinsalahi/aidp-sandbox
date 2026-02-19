@@ -1,13 +1,17 @@
-import { Content, Header, Page } from '@backstage/core-components';
+import { Content, Header, Page, WarningPanel } from '@backstage/core-components';
 import { Grid } from '@material-ui/core';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { AiChat } from './AiChat';
 import type { AiChatMessage } from './api';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 export function EntityAiContent() {
   const { entity } = useEntity();
   const entityRef = stringifyEntityRef(entity);
+  const configApi = useApi(configApiRef);
+  const unauthenticated =
+    configApi.getOptionalBoolean('ai.auth.allowUnauthenticated') === true;
 
   const componentSpec = (entity as any).spec ?? {};
   const contextLines = [
@@ -42,11 +46,21 @@ export function EntityAiContent() {
       <Content>
         <Grid container spacing={3}>
           <Grid item xs={12} md={10} lg={8}>
-            <AiChat title="Ask about this component" initialMessages={initialMessages} />
+            {unauthenticated ? (
+              <WarningPanel
+                title="Dev only: unauthenticated AI endpoint enabled"
+                message="`ai.auth.allowUnauthenticated` is true; anyone who can reach this Backstage instance can call the AI proxy."
+                severity="warning"
+              />
+            ) : null}
+            <AiChat
+              title="Ask about this component"
+              initialMessages={initialMessages}
+              entityRef={entityRef}
+            />
           </Grid>
         </Grid>
       </Content>
     </Page>
   );
 }
-

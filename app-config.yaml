@@ -31,6 +31,11 @@ backend:
     client: better-sqlite3
     connection: ':memory:'
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+  reading:
+    allow:
+      - host: github.com
+      - host: api.github.com
+      - host: raw.githubusercontent.com
 
 integrations:
   github:
@@ -66,7 +71,11 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
+    guest:
+      userEntityRef: user:default/guest
+      ownershipEntityRefs:
+        - user:default/guest
+        - group:default/guests
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
@@ -93,6 +102,11 @@ catalog:
       target: ../../examples/org.yaml
       rules:
         - allow: [User, Group]
+
+    # External repo example (GitHub)
+    - type: url
+      # Use a GitHub URL so the GitHub integration UrlReader is used (TechDocs needs readTree support).
+      target: https://github.com/hosseinsalahi/platform-engineer-battleground/blob/main/catalog-info.yaml
 
     ## Uncomment these lines to add more example data
     # - type: url

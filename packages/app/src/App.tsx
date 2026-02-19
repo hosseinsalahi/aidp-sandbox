@@ -38,6 +38,7 @@ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/
 import { NotificationsPage } from '@backstage/plugin-notifications';
 import { SignalsDisplay } from '@backstage/plugin-signals';
 import { AiPage } from './components/ai/AiPage';
+import { UiKitPage } from './components/design/UiKitPage';
 
 const app = createApp({
   apis,
@@ -99,6 +100,7 @@ const routes = (
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/notifications" element={<NotificationsPage />} />
     <Route path="/ai" element={<AiPage />} />
+    <Route path="/ui-kit" element={<UiKitPage />} />
   </FlatRoutes>
 );
 
